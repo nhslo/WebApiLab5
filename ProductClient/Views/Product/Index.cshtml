@@ -1,0 +1,78 @@
+@model IReadOnlyList<ProductClient.Models.Product>
+@using System.Globalization
+@{
+    ViewData["Title"] = "Список товаров";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="mb-1">Список товаров</h1>
+        <p class="text-secondary mb-0">Данные загружаются из Web API через именованный HttpClient.</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create">Добавить товар</a>
+</div>
+
+@if (TempData["SuccessMessage"] is string success)
+{
+    <div class="alert alert-success" role="status">@success</div>
+}
+@if (TempData["ErrorMessage"] is string tempError)
+{
+    <div class="alert alert-danger" role="alert">@tempError</div>
+}
+@if (ViewBag.ErrorMessage is string error)
+{
+    <div class="alert alert-danger" role="alert">@error</div>
+}
+
+<section class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h5">Получить товар по ID</h2>
+        <form asp-action="Details" method="get" class="row g-2 align-items-end">
+            <div class="col-sm-4 col-md-3">
+                <label for="id" class="form-label">ID товара</label>
+                <input id="id" name="id" type="number" min="1" class="form-control" required />
+            </div>
+            <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Найти</button></div>
+        </form>
+    </div>
+</section>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-light">
+            <tr><th>ID</th><th>Название</th><th>Описание</th><th class="text-end">Цена</th><th class="text-end">Количество</th><th>Действия</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.Id</td>
+                <td class="fw-semibold">@product.Name</td>
+                <td>@product.Description</td>
+                <td class="text-end text-nowrap">@product.Price.ToString("N0", CultureInfo.GetCultureInfo("ru-RU")) ₸</td>
+                <td class="text-end">@product.Quantity</td>
+                <td class="text-nowrap">
+                    <a asp-action="Details" asp-route-id="@product.Id">Просмотр</a><span class="mx-1">·</span>
+                    <a asp-action="Edit" asp-route-id="@product.Id">Изменить</a><span class="mx-1">·</span>
+                    <a asp-action="Delete" asp-route-id="@product.Id" class="text-danger">Удалить</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.Count == 0 && ViewBag.ErrorMessage is null && TempData["ErrorMessage"] is null)
+{
+    <p class="text-secondary">Список товаров пуст.</p>
+}
+
+<details class="mt-4">
+    <summary class="text-secondary">Проверка обработки ошибок API (тестовые запросы для Development)</summary>
+    <div class="d-flex flex-wrap gap-3 mt-2">
+        <a asp-action="TestBadRequest">Проверить HTTP 400</a>
+        <a asp-action="TestServerError">Проверить HTTP 500</a>
+        <a asp-action="Details" asp-route-id="9999">Проверить HTTP 404</a>
+    </div>
+</details>
